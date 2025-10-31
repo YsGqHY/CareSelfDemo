@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "kim.hhhhhy.mock.care"
-version = "1.0-SNAPSHOT"
+version = "1.1.0"
 
 repositories {
     mavenCentral()
