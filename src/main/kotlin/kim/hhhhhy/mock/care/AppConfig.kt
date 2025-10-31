@@ -17,6 +17,29 @@ object AppConfig {
     const val FADE_IN_ANIMATION_DURATION = "0.3s" // 弹窗淡入动画持续时间
     const val FADE_OUT_ANIMATION_DURATION = "0.5s" // 弹窗淡出动画持续时间
     
+    // 背景贴图配置
+    // 页面背景贴图URL列表，默认为空列表，可在运行时更新
+    @Volatile
+    var PAGE_BACKGROUND_IMAGES: List<String> = listOf()
+    
+    // 弹窗背景贴图URL列表，默认为空列表，可在运行时更新
+    @Volatile
+    var POPUP_BACKGROUND_IMAGES: List<String> = listOf()
+    
+    /**
+     * 更新页面背景图片列表
+     */
+    fun updatePageBackgroundImages(images: List<String>) {
+        PAGE_BACKGROUND_IMAGES = images.toList()
+    }
+    
+    /**
+     * 更新弹窗背景图片列表
+     */
+    fun updatePopupBackgroundImages(images: List<String>) {
+        POPUP_BACKGROUND_IMAGES = images.toList()
+    }
+    
     // 应用标题
     const val APP_TITLE = "好好爱自己"
     

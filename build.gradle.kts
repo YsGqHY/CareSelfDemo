@@ -15,6 +15,9 @@ dependencies {
     testImplementation(kotlin("test"))
     implementation("io.ktor:ktor-server-core:2.3.7")
     implementation("io.ktor:ktor-server-netty:2.3.7")
+    // 添加Kotlin协程依赖
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
 }
 
 tasks.test {

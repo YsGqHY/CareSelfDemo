@@ -10,32 +10,16 @@ object NetworkUtils {
      * 获取本机公网IP地址列表（IPv4）
      */
     fun getPublicIps(): List<String> {
-        val publicIps = mutableListOf<String>()
         try {
-            val networkInterfaces = NetworkInterface.getNetworkInterfaces()
-            
-            while (networkInterfaces.hasMoreElements()) {
-                val networkInterface = networkInterfaces.nextElement()
-                
-                // 跳过回环接口和禁用的接口
-                if (networkInterface.isLoopback || !networkInterface.isUp) continue
-                
-                val inetAddresses = networkInterface.inetAddresses
-                
-                while (inetAddresses.hasMoreElements()) {
-                    val inetAddress = inetAddresses.nextElement()
-                    
-                    // 只获取IPv4地址
-                    if (!inetAddress.isLoopbackAddress && inetAddress.hostAddress.indexOf(':') < 0) {
-                        publicIps.add(inetAddress.hostAddress)
-                    }
-                }
-            }
+            return NetworkInterface.getNetworkInterfaces()
+                .toList()
+                .flatMap { it.inetAddresses.toList() }
+                .filter { !it.isLoopbackAddress && it.hostAddress.indexOf(':') < 0 }
+                .map { it.hostAddress }
         } catch (e: Exception) {
-            // 捕获异常，不影响程序运行
+            println("获取公网IP时出错: ${e.message}")
+            return emptyList()
         }
-        
-        return publicIps
     }
     
     /**
