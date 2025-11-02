@@ -17,30 +17,20 @@
 
 - JDK 11 或更高版本
 - 支持现代HTML5的浏览器（Chrome、Firefox、Edge等）
+- Git（用于克隆仓库）
 
 ## 安装与使用
 
-### 方法一：直接运行JAR文件
+### 从源码构建和运行
 
-1. 确保已安装JDK 11或更高版本
-2. 进入`build/libs`目录
-3. 运行以下命令启动应用：
+1. 克隆仓库
    
    ```bash
-   java -jar CareSelf.jar
-   ```
-   
-   或者指定端口启动：
-   
-   ```bash
-   java -jar CareSelf.jar --server.port=8080
+   git clone https://github.com/yourusername/CareSelfDemo.git
+   cd CareSelfDemo
    ```
 
-### 方法二：从源码构建
-
-1. 克隆或下载本项目代码
-2. 进入项目根目录
-3. 运行以下命令构建项目：
+2. 构建项目
    
    ```bash
    # Windows系统
@@ -49,8 +39,38 @@
    # Linux/Mac系统
    ./gradlew build
    ```
-4. 构建完成后，JAR文件将生成在`build/libs`目录下
-5. 按照方法一的步骤运行JAR文件
+
+3. 运行应用
+   
+   ```bash
+   # 直接运行（推荐）
+   # Windows
+   gradlew.bat run
+   
+   # Linux/Mac
+   ./gradlew run
+   ```
+
+   或者通过构建的JAR文件运行：
+   
+   ```bash
+   # 构建后的JAR文件在build/libs目录
+   java -jar build/libs/CareSelfDemo-1.1.0.jar
+   ```
+
+4. 指定端口运行
+   
+   ```bash
+   # 通过Gradle运行时指定端口
+   # Windows
+   gradlew.bat run --args="--server.port=8080"
+   
+   # Linux/Mac
+   ./gradlew run --args="--server.port=8080"
+   
+   # 或者通过JAR文件指定端口
+   java -jar build/libs/CareSelfDemo-1.1.0.jar --server.port=8080
+   ```
 
 ## 访问应用
 
@@ -76,7 +96,11 @@ Localhost地址: localhost:7789
 可以通过命令行参数`--server.port`指定服务器端口，例如：
 
 ```bash
-java -jar CareSelf.jar --server.port=8080
+# 通过Gradle运行时
+./gradlew run --args="--server.port=8080"
+
+# 通过构建的JAR文件运行时
+java -jar build/libs/CareSelfDemo-1.1.0.jar --server.port=8080
 ```
 
 默认端口为7789。
@@ -97,20 +121,27 @@ java -jar CareSelf.jar --server.port=8080
 
 ```
 CareSelfDemo/
-├── bg/                        # 页面背景图片文件夹（运行时创建）
-├── popup/                     # 弹窗背景图片文件夹（运行时创建）
-├── src/
-│   └── main/
-│       └── kotlin/
-│           └── kim/hhhhhy/mock/care/
-│               ├── Main.kt    # 主程序文件
-│               ├── CareServer.kt  # 服务器配置
-│               ├── FileWatcher.kt # 文件监控系统
-│               └── HtmlGenerator.kt # HTML生成器
+├── .gitattributes
+├── .gitignore
+├── LICENSE
+├── README.md                  # 本文档
 ├── build.gradle.kts           # Gradle构建配置
+├── gradle.properties
+├── gradle/
+│   └── wrapper/
 ├── gradlew                    # Linux/Mac Gradle包装器
 ├── gradlew.bat                # Windows Gradle包装器
-└── README.md                  # 本文档
+├── settings.gradle.kts
+├── src/
+│   ├── main/
+│   │   ├── kotlin/            # Kotlin源代码
+│   │   └── resources/         # 资源文件
+│   └── test/
+│       ├── java/              # Java测试
+│       ├── kotlin/            # Kotlin测试
+│       └── resources/         # 测试资源
+└── # bg/和popup/文件夹会在首次运行时自动创建
+    # build/目录不会包含在GitHub仓库中，需要本地构建生成
 ```
 
 ## 技术栈
@@ -140,7 +171,7 @@ CareSelfDemo/
 
 当前版本：1.1.0
 
-### 重新构建项目
+### 构建和测试
 
 修改代码后，运行以下命令重新构建：
 
@@ -148,7 +179,7 @@ CareSelfDemo/
 # 清理旧的构建文件
 ./gradlew clean
 
-# 构建新项目
+# 构建项目
 ./gradlew build
 ```
 
