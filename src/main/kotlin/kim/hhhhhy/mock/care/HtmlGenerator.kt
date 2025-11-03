@@ -10,8 +10,8 @@ object HtmlGenerator {
      */
     fun createHtmlPage(): String {
         // 从配置列表中随机选择一个页面背景图URL
-        val randomPageBgImage = if (AppConfig.PAGE_BACKGROUND_IMAGES.isNotEmpty()) {
-            AppConfig.PAGE_BACKGROUND_IMAGES.random()
+        val randomPageBgImage = if (AppConfig.getInstance().pageBackgroundImages.isNotEmpty()) {
+            AppConfig.getInstance().pageBackgroundImages.random()
         } else ""
         
         return """
@@ -20,7 +20,7 @@ object HtmlGenerator {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${AppConfig.APP_TITLE}</title>
+    <title>${AppConfig.getInstance().appTitle}</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', sans-serif;
@@ -41,29 +41,41 @@ object HtmlGenerator {
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            animation: fadeIn ${AppConfig.FADE_IN_ANIMATION_DURATION} ease-in;
+            animation: fadeIn ${AppConfig.getInstance().fadeInAnimationDuration} ease-in, scaleIn ${AppConfig.getInstance().fadeInAnimationDuration} ease-out;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* 添加阴影效果 */
         }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0.8); }
+            to { transform: scale(1); }
         }
     </style>
 </head>
 <body>
     <script>
         // 提示信息列表
-        const tips = ${AppConfig.TIPS.toJson()};
+        const tips = ${AppConfig.getInstance().tips.toJson()};
         
         // 配置常量
-        const POPUP_WIDTH = "${AppConfig.POPUP_WIDTH}";
-        const POPUP_HEIGHT = "${AppConfig.POPUP_HEIGHT}";
-        const DISPLAY_TIME_MS = ${AppConfig.POPUP_DISPLAY_TIME_MS};
-        const FADE_OUT_TIME_MS = ${AppConfig.POPUP_FADE_OUT_TIME_MS};
-        const INTERVAL_MS = ${AppConfig.POPUP_INTERVAL_MS};
+        const POPUP_WIDTH = "${AppConfig.getInstance().popupWidth}";
+        const POPUP_HEIGHT = "${AppConfig.getInstance().popupHeight}";
+        const DISPLAY_TIME_MS = ${AppConfig.getInstance().popupDisplayTimeMs};
+        const FADE_OUT_TIME_MS = ${AppConfig.getInstance().popupFadeOutTimeMs};
+        const INTERVAL_MS = ${AppConfig.getInstance().popupIntervalMs};
+        const TEXT_X_OFFSET = ${AppConfig.getInstance().popupTitleXOffset}; // 文本相对于弹窗容器的X轴偏移量
+        const TEXT_Y_OFFSET = ${AppConfig.getInstance().popupTitleYOffset}; // 文本相对于弹窗容器的Y轴偏移量
+        const POPUP_MODE = "${AppConfig.getInstance().popupMode}"; // 弹窗模式
+        const MAX_POPUPS_COUNT = ${AppConfig.getInstance().maxPopupsCount}; // 模式2下最大弹窗数量
+        
+        // 弹窗队列，用于模式2的FIFO管理
+        const popupQueue = []; // 按创建顺序存储弹窗元素
         // 页面背景贴图URL
         const PAGE_BACKGROUND_IMAGE = "$randomPageBgImage";
         // 弹窗背景贴图URL列表
-        const POPUP_BACKGROUND_IMAGES = ${AppConfig.POPUP_BACKGROUND_IMAGES.toJson()};
+        const POPUP_BACKGROUND_IMAGES = ${AppConfig.getInstance().popupBackgroundImages.toJson()};
         
         // 生成随机位置
         function getRandomPosition() {
@@ -153,53 +165,122 @@ object HtmlGenerator {
             }
         }
         
-        // 显示弹窗
-        function showPopups() {
+        // 创建弹窗
+        function createPopup() {
+            // 随机选择提示文本
+            const tip = tips[Math.floor(Math.random() * tips.length)];
+            
+            // 创建弹窗元素
+            const popup = document.createElement('div');
+            popup.className = 'popup';
+            popup.style.width = POPUP_WIDTH;
+            popup.style.height = POPUP_HEIGHT;
+            popup.style.transition = `opacity ${AppConfig.getInstance().fadeOutAnimationDuration} ease-out, transform 0.3s ease-out`;
+            popup.style.opacity = '0'; // 初始透明度为0，准备淡入动画
+            popup.style.transform = 'scale(0.8)'; // 初始缩放效果
+            
+            // 设置弹窗背景
+            setPopupBackground(popup);
+            
+            // 设置随机位置（弹窗容器在页面中的位置）
+            const position = getRandomPosition();
+            popup.style.left = position.x + 'px';
+            popup.style.top = position.y + 'px';
+            
+            // 创建文本容器，用于应用文本偏移
+            const textContainer = document.createElement('div');
+            textContainer.textContent = tip;
+            textContainer.style.transform = 'translate(' + TEXT_X_OFFSET + 'px, ' + TEXT_Y_OFFSET + 'px)';
+            
+            // 清空弹窗内容并添加带有偏移的文本容器
+            popup.innerHTML = '';
+            popup.appendChild(textContainer);
+            
+            // 调整弹窗样式，使其成为flex容器，为内部元素提供正确的定位上下文
+            popup.style.display = 'flex';
+            popup.style.alignItems = 'center';
+            popup.style.justifyContent = 'center';
+            
+            return popup;
+        }
+        
+        // 显示弹窗动画
+        function showPopupWithAnimation(popup) {
+            document.body.appendChild(popup);
+            
+            // 触发重排，确保动画能正常播放
+            void popup.offsetWidth;
+            
+            // 执行淡入和放大动画
+            popup.style.opacity = '1';
+            popup.style.transform = 'scale(1)';
+        }
+        
+        // 移除弹窗动画
+        function removePopupWithAnimation(popup) {
+            popup.style.opacity = '0';
+            popup.style.transform = 'scale(0.8)';
+            
+            // 动画结束后移除元素
+            setTimeout(() => {
+                if (popup.parentNode) {
+                    popup.parentNode.removeChild(popup);
+                }
+            }, FADE_OUT_TIME_MS);
+        }
+        
+        // 模式1处理逻辑：定时消失
+        function handleMode1() {
             const showNextPopup = () => {
-                // 随机选择提示文本
-                const tip = tips[Math.floor(Math.random() * tips.length)];
-                
-                // 创建弹窗元素
-                const popup = document.createElement('div');
-                popup.className = 'popup';
-                popup.textContent = tip;
-                popup.style.width = POPUP_WIDTH;
-                popup.style.height = POPUP_HEIGHT;
-                popup.style.transition = `opacity ${AppConfig.FADE_OUT_ANIMATION_DURATION} ease-out`;
-                
-                // 设置弹窗背景
-                setPopupBackground(popup);
-                
-                // 设置随机位置
-                const position = getRandomPosition();
-                popup.style.left = position.x + 'px';
-                popup.style.top = position.y + 'px';
-                
-                // 添加到页面
-                document.body.appendChild(popup);
+                const popup = createPopup();
+                showPopupWithAnimation(popup);
                 
                 // 设置自动移除逻辑
                 setTimeout(() => {
-                    // 开始淡出动画
-                    popup.style.opacity = '0';
-                    
-                    // 动画结束后移除元素
-                    setTimeout(() => {
-                        if (popup.parentNode) {
-                            popup.parentNode.removeChild(popup);
-                        }
-                    }, FADE_OUT_TIME_MS);
+                    removePopupWithAnimation(popup);
                 }, DISPLAY_TIME_MS);
                 
                 // 设置下一个弹窗的显示时间
                 setTimeout(showNextPopup, INTERVAL_MS);
             };
             
+            showNextPopup();
+        }
+        
+        // 模式2处理逻辑：常驻，数量限制，FIFO清理
+        function handleMode2() {
+            const showNextPopup = () => {
+                // 检查是否需要清理旧弹窗（FIFO原则）
+                if (popupQueue.length >= MAX_POPUPS_COUNT) {
+                    const oldestPopup = popupQueue.shift(); // 移除最早的弹窗
+                    removePopupWithAnimation(oldestPopup);
+                }
+                
+                const popup = createPopup();
+                showPopupWithAnimation(popup);
+                
+                // 将新弹窗添加到队列末尾
+                popupQueue.push(popup);
+                
+                // 设置下一个弹窗的显示时间
+                setTimeout(showNextPopup, INTERVAL_MS);
+            };
+            
+            showNextPopup();
+        }
+        
+        // 显示弹窗
+        function showPopups() {
             // 预加载图片
             preloadImages();
             
-            // 开始显示第一个弹窗
-            showNextPopup();
+            // 根据配置的模式选择相应的处理函数
+            if (POPUP_MODE === "mode2") {
+                handleMode2();
+            } else {
+                // 默认为模式1
+                handleMode1();
+            }
         }
         
         // 页面加载后自动执行动画

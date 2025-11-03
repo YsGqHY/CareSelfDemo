@@ -22,7 +22,7 @@ class CareServer {
         embeddedServer(
             factory = Netty,
             port = port,
-            host = AppConfig.HOST
+            host = AppConfig.getInstance().host
         ) {
             configureRouting()
         }.start(wait = true)

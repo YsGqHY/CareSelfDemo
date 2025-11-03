@@ -2,6 +2,7 @@ package kim.hhhhhy.mock.care
 
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.logging.Logger
 
 /**
  * 扩展函数：将List<String>转换为JSON字符串
@@ -15,7 +16,7 @@ fun List<String>.toJson(): String {
  */
 fun updatePageBackgroundImages(images: List<String>) {
     try {
-        AppConfig.updatePageBackgroundImages(images)
+        AppConfig.getInstance().updatePageBackgroundImages(images)
         println("成功更新页面背景图片列表: ${images.size} 张图片")
     } catch (e: Exception) {
         println("更新页面背景图片列表时出错: ${e.message}")
@@ -28,7 +29,7 @@ fun updatePageBackgroundImages(images: List<String>) {
  */
 fun updatePopupBackgroundImages(images: List<String>) {
     try {
-        AppConfig.updatePopupBackgroundImages(images)
+        AppConfig.getInstance().updatePopupBackgroundImages(images)
         println("成功更新弹窗背景图片列表: ${images.size} 张图片")
     } catch (e: Exception) {
         println("更新弹窗背景图片列表时出错: ${e.message}")
@@ -40,7 +41,15 @@ fun updatePopupBackgroundImages(images: List<String>) {
  * 应用入口点
  */
 fun main(args: Array<String>) {
+    val logger = Logger.getLogger("Main")
     println("正在启动应用...")
+
+    // 初始化配置管理器
+    logger.info("初始化配置管理器...")
+    val configManager = ConfigManager.getInstance()
+    if (!configManager.initialize()) {
+        logger.warning("配置初始化失败，但将继续使用默认配置启动应用")
+    }
 
     // 解析命令行参数获取端口号
     val port = NetworkUtils.parsePort(args)
@@ -76,11 +85,13 @@ fun main(args: Array<String>) {
     // 打印服务器地址信息
     NetworkUtils.printServerAddresses(port)
 
-    // 确保程序退出时停止文件监控
+    // 确保程序退出时停止文件监控和配置管理
     Runtime.getRuntime().addShutdownHook(Thread {
         println("正在关闭资源...")
         // 停止所有文件监控
         fileWatcher.stopAll()
+        // 关闭配置管理器
+        configManager.shutdown()
         println("资源已关闭")
     })
 

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "kim.hhhhhy.mock.care"
-version = "1.1.0"
+version = "1.2.3"
 
 repositories {
     mavenCentral()
@@ -18,6 +18,9 @@ dependencies {
     // 添加Kotlin协程依赖
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3")
+    // 添加YAML解析依赖
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 }
 
 tasks.test {

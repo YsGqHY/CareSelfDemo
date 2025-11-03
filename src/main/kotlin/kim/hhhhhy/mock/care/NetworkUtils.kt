@@ -33,12 +33,12 @@ object NetworkUtils {
                         println("使用指定端口: $it")
                     }
                 } catch (e: NumberFormatException) {
-                    println("端口号格式错误，使用默认端口: ${AppConfig.DEFAULT_PORT}")
+                    println("端口号格式错误，使用默认端口: ${AppConfig.getInstance().defaultPort}")
                 }
             }
         }
-        println("使用默认端口: ${AppConfig.DEFAULT_PORT}")
-        return AppConfig.DEFAULT_PORT
+        println("使用默认端口: ${AppConfig.getInstance().defaultPort}")
+        return AppConfig.getInstance().defaultPort
     }
     
     /**

@@ -3,48 +3,38 @@ package kim.hhhhhy.mock.care
 /**
  * 应用配置对象，集中管理所有可自定义的配置选项
  */
-object AppConfig {
+class AppConfig {
     // 服务器配置
-    const val DEFAULT_PORT = 7789
-    const val HOST = "0.0.0.0"
+    var defaultPort: Int = 7789
+    var host: String = "0.0.0.0"
     
     // 弹窗配置
-    const val POPUP_WIDTH = "300px"
-    const val POPUP_HEIGHT = "140px"
-    const val POPUP_DISPLAY_TIME_MS = 5000 // 弹窗显示时间（毫秒）
-    const val POPUP_FADE_OUT_TIME_MS = 500 // 弹窗淡出动画时间（毫秒）
-    const val POPUP_INTERVAL_MS = 150 // 弹窗生成间隔（毫秒）
-    const val FADE_IN_ANIMATION_DURATION = "0.3s" // 弹窗淡入动画持续时间
-    const val FADE_OUT_ANIMATION_DURATION = "0.5s" // 弹窗淡出动画持续时间
+    var popupWidth: String = "300px"
+    var popupHeight: String = "140px"
+    var popupDisplayTimeMs: Int = 5000 // 弹窗显示时间（毫秒）
+    var popupFadeOutTimeMs: Int = 500 // 弹窗淡出动画时间（毫秒）
+    var popupIntervalMs: Int = 150 // 弹窗生成间隔（毫秒）
+    var fadeInAnimationDuration: String = "0.3s" // 弹窗淡入动画持续时间
+    var fadeOutAnimationDuration: String = "0.5s" // 弹窗淡出动画持续时间
+    var popupTitleXOffset: Int = 0 // 弹窗标题X轴偏移量（像素），相对于弹窗容器内部，正值向右偏移
+    var popupTitleYOffset: Int = 0 // 弹窗标题Y轴偏移量（像素），相对于弹窗容器内部，正值向下偏移
+    var popupMode: String = "mode1" // 弹窗模式，可选值：mode1（默认，定时消失）、mode2（常驻，数量限制）
+    var maxPopupsCount: Int = 10 // 模式2下最大同时显示的弹窗数量
     
     // 背景贴图配置
     // 页面背景贴图URL列表，默认为空列表，可在运行时更新
     @Volatile
-    var PAGE_BACKGROUND_IMAGES: List<String> = listOf()
+    var pageBackgroundImages: MutableList<String> = mutableListOf()
     
     // 弹窗背景贴图URL列表，默认为空列表，可在运行时更新
     @Volatile
-    var POPUP_BACKGROUND_IMAGES: List<String> = listOf()
-    
-    /**
-     * 更新页面背景图片列表
-     */
-    fun updatePageBackgroundImages(images: List<String>) {
-        PAGE_BACKGROUND_IMAGES = images.toList()
-    }
-    
-    /**
-     * 更新弹窗背景图片列表
-     */
-    fun updatePopupBackgroundImages(images: List<String>) {
-        POPUP_BACKGROUND_IMAGES = images.toList()
-    }
+    var popupBackgroundImages: MutableList<String> = mutableListOf()
     
     // 应用标题
-    const val APP_TITLE = "好好爱自己"
+    var appTitle: String = "好好爱自己"
     
     // 提示信息列表
-    val TIPS = listOf(
+    var tips: MutableList<String> = mutableListOf(
         "天天开心",
         "别熬夜",
         "早点休息",
@@ -58,4 +48,36 @@ object AppConfig {
         "记得吃水果",
         "好好吃饭"
     )
+    
+    /**
+     * 更新页面背景图片列表
+     */
+    fun updatePageBackgroundImages(images: List<String>) {
+        pageBackgroundImages = images.toMutableList()
+    }
+    
+    /**
+     * 更新弹窗背景图片列表
+     */
+    fun updatePopupBackgroundImages(images: List<String>) {
+        popupBackgroundImages = images.toMutableList()
+    }
+    
+    /**
+     * 获取单例实例
+     */
+    companion object {
+        private var instance: AppConfig? = null
+        
+        fun getInstance(): AppConfig {
+            if (instance == null) {
+                instance = AppConfig()
+            }
+            return instance!!
+        }
+        
+        fun setInstance(newInstance: AppConfig) {
+            instance = newInstance
+        }
+    }
 }
