@@ -88,27 +88,61 @@ class ConfigManager {
     private fun createDefaultConfigFile() {
         try {
             val defaultConfig = """
+# 服务器配置
 server:
+  # 默认端口号
   defaultPort: 7789
+  # 主机地址
   host: "0.0.0.0"
 
+# 弹窗配置
 popup:
+  # 弹窗宽度
   width: "300px"
-  height: "140px"
-  displayTimeMs: 5000
+  # 弹窗高度
+  height: "100px"
+  # 弹窗显示时间（毫秒）
+  displayTimeMs: 10000
+  # 弹窗淡出动画时间（毫秒）
   fadeOutTimeMs: 500
-  intervalMs: 150
+  # 弹窗生成间隔（毫秒）
+  intervalMs: 100
+  # 弹窗淡入动画持续时间
   fadeInAnimationDuration: "0.3s"
+  # 弹窗淡出动画持续时间
   fadeOutAnimationDuration: "0.5s"
+  # 弹窗标题X轴偏移量（像素），相对于弹窗容器内部，正值向右偏移
   xOffset: 0
-  yOffset: 0
-  # 弹窗模式：mode1（默认，定时消失）、mode2（常驻，数量限制）
-  mode: "mode1"
+  # 弹窗标题Y轴偏移量（像素），相对于弹窗容器内部，正值向下偏移
+  yOffset: 15
+  # 弹窗文本颜色，支持十六进制、RGB/RGBA或预定义颜色名称
+  popup_text_color: "white"
+  # 弹窗文本描边颜色，支持十六进制、RGB/RGBA或预定义颜色名称
+  popup_text_stroke_color: "rgba(0, 0, 0, 0.9)"
+  # 弹窗模式：mode1（默认，定时消失）、mode2（常驻，数量限制）、mode3（中央爱心动画）
+  mode: "mode3"
   # 模式2下最大同时显示的弹窗数量
-  maxCount: 10
+  maxCount: 100  
+  # 模式3下爱心动画持续时间（毫秒）
+  heartAnimationDuration: 2000
+  # 模式3下爱心大小（像素）
+  heartSize: 1500
+  # 模式3下爱心颜色
+  heartColor: "#ff3e6c"
+  # 模式3下爱心绘制过程中显示的弹窗总数
+  heartPopupCount: 60
+  # 模式3下爱心路径绘制尺寸大小的缩放因子
+  heartScale: 1
+  # 模式3下爱心图形在页面中的X坐标偏移
+  heartOffsetX: 0
+  # 模式3下爱心图形在页面中的Y坐标偏移
+  heartOffsetY: -60
 
+# 应用配置
 app:
+  # 应用标题
   title: "好好爱自己"
+  # 提示信息列表
   tips:
     - "天天开心"
     - "别熬夜"
@@ -197,11 +231,38 @@ app:
                 if (popupNode.has("yOffset")) {
                     newConfig.popupTitleYOffset = popupNode.get("yOffset").asInt()
                 }
+                if (popupNode.has("popup_text_color")) {
+                    newConfig.popupTextColor = popupNode.get("popup_text_color").asText()
+                }
+                if (popupNode.has("popup_text_stroke_color")) {
+                    newConfig.popupTextStrokeColor = popupNode.get("popup_text_stroke_color").asText()
+                }
                 if (popupNode.has("mode")) {
                     newConfig.popupMode = popupNode.get("mode").asText()
                 }
                 if (popupNode.has("maxCount")) {
                     newConfig.maxPopupsCount = popupNode.get("maxCount").asInt()
+                }
+                if (popupNode.has("heartAnimationDuration")) {
+                    newConfig.heartAnimationDuration = popupNode.get("heartAnimationDuration").asInt()
+                }
+                if (popupNode.has("heartSize")) {
+                    newConfig.heartSize = popupNode.get("heartSize").asInt()
+                }
+                if (popupNode.has("heartColor")) {
+                    newConfig.heartColor = popupNode.get("heartColor").asText()
+                }
+                if (popupNode.has("heartPopupCount")) {
+                    newConfig.heartPopupCount = popupNode.get("heartPopupCount").asInt()
+                }
+                if (popupNode.has("heartScale")) {
+                    newConfig.heartScale = popupNode.get("heartScale").asDouble()
+                }
+                if (popupNode.has("heartOffsetX")) {
+                    newConfig.heartOffsetX = popupNode.get("heartOffsetX").asInt()
+                }
+                if (popupNode.has("heartOffsetY")) {
+                    newConfig.heartOffsetY = popupNode.get("heartOffsetY").asInt()
                 }
             }
             

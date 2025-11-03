@@ -18,7 +18,16 @@ class AppConfig {
     var fadeOutAnimationDuration: String = "0.5s" // 弹窗淡出动画持续时间
     var popupTitleXOffset: Int = 0 // 弹窗标题X轴偏移量（像素），相对于弹窗容器内部，正值向右偏移
     var popupTitleYOffset: Int = 0 // 弹窗标题Y轴偏移量（像素），相对于弹窗容器内部，正值向下偏移
-    var popupMode: String = "mode1" // 弹窗模式，可选值：mode1（默认，定时消失）、mode2（常驻，数量限制）
+    var popupTextColor: String = "white" // 弹窗文本颜色
+    var popupTextStrokeColor: String = "rgba(0, 0, 0, 0.9)" // 弹窗文本描边颜色
+    var popupMode: String = "mode1" // 弹窗模式，可选值：mode1（默认，定时消失）、mode2（常驻，数量限制）、mode3（中央爱心动画）
+    var heartAnimationDuration: Int = 2000 // 模式3下爱心动画持续时间（毫秒）
+    var heartSize: Int = 150 // 模式3下爱心大小（像素）
+    var heartColor: String = "#ff3e6c" // 模式3下爱心颜色（默认粉红色）
+    var heartPopupCount: Int = 30 // 模式3下爱心绘制过程中显示的弹窗总数
+    var heartScale: Double = 1.0 // 模式3下爱心路径绘制尺寸大小的缩放因子
+    var heartOffsetX: Int = 0 // 模式3下爱心图形在页面中的X坐标偏移
+    var heartOffsetY: Int = 0 // 模式3下爱心图形在页面中的Y坐标偏移
     var maxPopupsCount: Int = 10 // 模式2下最大同时显示的弹窗数量
     
     // 背景贴图配置

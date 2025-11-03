@@ -16,7 +16,7 @@ popup:
   # 弹窗淡出动画时间（毫秒）
   fadeOutTimeMs: 500
   # 弹窗生成间隔（毫秒）
-  intervalMs: 140
+  intervalMs: 100
   # 弹窗淡入动画持续时间
   fadeInAnimationDuration: "0.3s"
   # 弹窗淡出动画持续时间
@@ -25,10 +25,28 @@ popup:
   xOffset: 0
   # 弹窗标题Y轴偏移量（像素），相对于弹窗容器内部，正值向下偏移
   yOffset: 15
-  # 弹窗模式：mode1（默认，定时消失）、mode2（常驻，数量限制）
-  mode: "mode2"
+  # 弹窗文本颜色，支持十六进制、RGB/RGBA或预定义颜色名称
+  popup_text_color: "white"
+  # 弹窗文本描边颜色，支持十六进制、RGB/RGBA或预定义颜色名称
+  popup_text_stroke_color: "rgba(0, 0, 0, 0.9)"
+  # 弹窗模式：mode1（默认，定时消失）、mode2（常驻，数量限制）、mode3（中央爱心动画）
+  mode: "mode3"
   # 模式2下最大同时显示的弹窗数量
   maxCount: 100
+  # 模式3下爱心动画持续时间（毫秒）
+  heartAnimationDuration: 2000
+  # 模式3下爱心大小（像素）
+  heartSize: 1500
+  # 模式3下爱心颜色
+  heartColor: "#ff3e6c"
+  # 模式3下爱心绘制过程中显示的弹窗总数
+  heartPopupCount: 60
+  # 模式3下爱心路径绘制尺寸大小的缩放因子
+  heartScale: 1
+  # 模式3下爱心图形在页面中的X坐标偏移
+  heartOffsetX: 0
+  # 模式3下爱心图形在页面中的Y坐标偏移
+  heartOffsetY: -60
 
 # 应用配置
 app:

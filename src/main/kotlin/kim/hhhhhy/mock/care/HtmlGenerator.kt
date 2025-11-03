@@ -52,6 +52,29 @@ object HtmlGenerator {
             from { transform: scale(0.8); }
             to { transform: scale(1); }
         }
+        /* 爱心绘制动画 */
+        @keyframes drawHeart {
+            0% {
+                stroke-dasharray: 0 1000;
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                stroke-dasharray: 1000 0;
+                opacity: 1;
+            }
+        }
+        /* 爱心脉动效果 */
+        @keyframes pulseHeart {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
     </style>
 </head>
 <body>
@@ -64,11 +87,22 @@ object HtmlGenerator {
         const POPUP_HEIGHT = "${AppConfig.getInstance().popupHeight}";
         const DISPLAY_TIME_MS = ${AppConfig.getInstance().popupDisplayTimeMs};
         const FADE_OUT_TIME_MS = ${AppConfig.getInstance().popupFadeOutTimeMs};
+        const FADE_OUT_ANIMATION_DURATION = "${AppConfig.getInstance().fadeOutAnimationDuration.replace("s", "")}"; // 移除's'后缀，用于JavaScript动画
         const INTERVAL_MS = ${AppConfig.getInstance().popupIntervalMs};
         const TEXT_X_OFFSET = ${AppConfig.getInstance().popupTitleXOffset}; // 文本相对于弹窗容器的X轴偏移量
         const TEXT_Y_OFFSET = ${AppConfig.getInstance().popupTitleYOffset}; // 文本相对于弹窗容器的Y轴偏移量
         const POPUP_MODE = "${AppConfig.getInstance().popupMode}"; // 弹窗模式
         const MAX_POPUPS_COUNT = ${AppConfig.getInstance().maxPopupsCount}; // 模式2下最大弹窗数量
+        // mode3相关配置
+        const HEART_ANIMATION_DURATION = ${AppConfig.getInstance().heartAnimationDuration}; // 爱心动画持续时间
+        const HEART_SIZE = ${AppConfig.getInstance().heartSize}; // 爱心大小
+        const HEART_COLOR = "${AppConfig.getInstance().heartColor}"; // 爱心颜色
+        const HEART_POPUP_COUNT = ${AppConfig.getInstance().heartPopupCount}; // 爱心绘制过程中显示的弹窗总数
+        const HEART_SCALE = ${AppConfig.getInstance().heartScale}; // 爱心路径绘制尺寸大小的缩放因子
+        const HEART_OFFSET_X = ${AppConfig.getInstance().heartOffsetX}; // 爱心图形在页面中的X坐标偏移
+        const HEART_OFFSET_Y = ${AppConfig.getInstance().heartOffsetY}; // 爱心图形在页面中的Y坐标偏移
+        const POPUP_TEXT_COLOR = "${AppConfig.getInstance().popupTextColor}"; // 弹窗文本颜色
+        const POPUP_TEXT_STROKE_COLOR = "${AppConfig.getInstance().popupTextStrokeColor}"; // 弹窗文本描边颜色
         
         // 弹窗队列，用于模式2的FIFO管理
         const popupQueue = []; // 按创建顺序存储弹窗元素
@@ -114,10 +148,10 @@ object HtmlGenerator {
                 popup.style.backgroundRepeat = 'no-repeat';
                 // 添加背景色作为过渡区域
                 popup.style.backgroundColor = '#f0f0f0';
-                // 确保文字颜色为白色以适应各种背景
-                popup.style.color = 'white';
-                // 添加更强的文字阴影以提高可读性
-                popup.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.9)';
+                // 使用配置的文字颜色
+                popup.style.color = POPUP_TEXT_COLOR;
+                // 使用配置的文字描边颜色
+                popup.style.textShadow = '2px 2px 4px ' + POPUP_TEXT_STROKE_COLOR;
                 // 添加边框以提高弹窗的可见性
                 popup.style.border = '2px solid rgba(255, 255, 255, 0.3)';
             } else {
@@ -135,7 +169,7 @@ object HtmlGenerator {
             if (PAGE_BACKGROUND_IMAGE) {
                 const img = new Image();
                 img.onload = function() {
-                    console.log('页面背景图加载成功');
+    
                 };
                 img.onerror = function() {
                     console.warn('页面背景图加载失败，使用默认背景');
@@ -150,7 +184,7 @@ object HtmlGenerator {
                 POPUP_BACKGROUND_IMAGES.forEach((imageUrl, index) => {
                     const img = new Image();
                     img.onload = function() {
-                        console.log('弹窗背景图 ' + (index + 1) + ' 加载成功: ' + imageUrl);
+    
                     };
                     img.onerror = function() {
                         console.warn('弹窗背景图 ' + (index + 1) + ' 加载失败: ' + imageUrl);
@@ -175,7 +209,7 @@ object HtmlGenerator {
             popup.className = 'popup';
             popup.style.width = POPUP_WIDTH;
             popup.style.height = POPUP_HEIGHT;
-            popup.style.transition = `opacity ${AppConfig.getInstance().fadeOutAnimationDuration} ease-out, transform 0.3s ease-out`;
+            popup.style.transition = 'opacity ' + FADE_OUT_ANIMATION_DURATION + 's ease-out, transform 0.3s ease-out';
             popup.style.opacity = '0'; // 初始透明度为0，准备淡入动画
             popup.style.transform = 'scale(0.8)'; // 初始缩放效果
             
@@ -269,6 +303,380 @@ object HtmlGenerator {
             showNextPopup();
         }
         
+        // 模式3处理逻辑：中央爱心动画 - 使用算法生成爱心路径
+        function handleMode3() {
+
+
+            
+            // 创建自适应爱心容器，铺满整个页面
+            const createHeartContainer = () => {
+    
+                try {
+                    const container = document.createElement('div');
+                    container.style.position = 'fixed';
+                    container.style.top = '0';
+                    container.style.left = '0';
+                    container.style.width = '100%';
+                    container.style.height = '100%';
+                    container.style.display = 'flex';
+                    container.style.alignItems = 'center';
+                    container.style.justifyContent = 'center';
+                    container.style.zIndex = '1000';
+                    container.style.overflow = 'hidden';
+        
+                    return container;
+                } catch (error) {
+                    console.error('创建爱心容器失败:', error);
+                    return null;
+                }
+            };
+            
+            // 添加窗口大小变化监听，确保爱心始终自适应
+            window.addEventListener('resize', () => {
+
+                // 可以选择在窗口大小变化时重新绘制爱心
+                // 这里不直接重绘，而是等待当前动画周期结束后自然适应
+            });
+            
+            /**
+             * 使用改进的参数方程算法生成标准爱心形状路径
+             * 算法原理：
+             * 1. 使用标准心形曲线参数方程，优化系数确保形状美观
+             * 2. 增加采样点数以获得更平滑的曲线
+             * 3. 优化坐标变换，确保爱心居中且比例协调
+             */
+            const generateHeartPath = (resolution = 200) => {
+    
+                try {
+                    // 增加分辨率获得更平滑曲线
+                    const points = [];
+                    const rawPoints = []; // 保存原始坐标，用于弹窗定位
+                    // 调整缩放因子以获得更标准的爱心比例
+                    const scale = 1.2;
+                    
+                    // 对参数t从0到2π进行高密度采样
+                    for (let i = 0; i <= resolution; i++) {
+                        const t = (i / resolution) * 2 * Math.PI;
+                        
+                        // 使用标准心形曲线参数方程，优化系数
+                        // 调整后的方程确保爱心形状更加标准和美观
+                        const x = 16 * Math.pow(Math.sin(t), 3);
+                        // 原方程可能导致底部过尖，调整系数使底部更圆润
+                        const y = 13 * Math.cos(t) - 4.5 * Math.cos(2 * t) - 1.8 * Math.cos(3 * t) - 0.9 * Math.cos(4 * t);
+                        
+                        // 保存原始坐标，用于弹窗定位
+                        rawPoints.push({ x, y, t });
+                        
+                        // 优化坐标变换
+                        // 50是视图中心，应用缩放因子并调整位置
+                        const adjustedX = 50 + x * scale;
+                        // 注意这里需要翻转y轴方向（SVG坐标系y轴向下）
+                        const adjustedY = 50 - y * scale;
+                        
+                        // 记录关键坐标点以便调试
+                        if (i % 20 === 0 || i === resolution) {
+            
+                        }
+                        
+                        // 使用标准字符串拼接避免模板字符串可能的问题
+                        points.push(adjustedX + ',' + adjustedY);
+                    }
+                    
+                    // 构建SVG路径字符串，确保所有点正确连接
+                    // 使用M命令移动到起点，然后L命令连接所有后续点
+                    const pathString = 'M' + points.join(' L');
+        
+        
+                    
+                    // 返回路径字符串和原始点数据，用于弹窗定位
+                    return { pathString, rawPoints };
+                } catch (error) {
+                    console.error('生成爱心路径失败:', error);
+                    return { pathString: '', rawPoints: [] };
+                }
+            };
+            
+            // 定义当前爱心动画中的所有弹窗元素，用于后续清理
+            let currentHeartPopups = [];
+            
+            // 在爱心路径点上创建并定位弹窗 - 自适应版本，确保完全铺满显示区域
+            const createPopupsOnPathPoints = (rawPoints, svgElement, scale) => {
+        
+                
+                // 清空当前弹窗列表
+                currentHeartPopups = [];
+                
+                // 安全检查：确保svgElement和parentElement都存在
+                if (!svgElement || !svgElement.parentElement) {
+                    console.error('SVG元素或其父元素不存在，无法计算位置');
+                    // 使用默认值作为后备方案
+                    return 0;
+                }
+                
+                // 根据弹窗尺寸和页面大小计算最佳点密度
+                const popupWidth = parseInt(POPUP_WIDTH);
+                const popupHeight = parseInt(POPUP_HEIGHT);
+                
+                // 安全获取容器尺寸
+                let containerRect;
+                try {
+                    containerRect = svgElement.parentElement.getBoundingClientRect();
+        
+                } catch (error) {
+                    console.error('获取容器尺寸失败，使用屏幕尺寸作为后备方案:', error);
+                    // 使用屏幕尺寸作为后备方案
+                    containerRect = {
+                        left: 0,
+                        top: 0,
+                        width: window.innerWidth,
+                        height: window.innerHeight
+                    };
+                }
+                
+                // 实现弹窗数量配置和平均分布算法
+                // 使用用户配置的弹窗数量，如果配置为0或无效，则使用默认值
+                const targetPopupCount = Math.max(10, Math.min(HEART_POPUP_COUNT, rawPoints.length));
+    
+                
+                // 计算平均分布的步长
+                const step = Math.max(1, Math.floor(rawPoints.length / targetPopupCount));
+                const selectedPoints = [];
+                
+                // 确保均匀分布在整个路径上
+                for (let i = 0; i < rawPoints.length; i += step) {
+                    selectedPoints.push(rawPoints[i]);
+                }
+                
+                // 如果点数不足，尝试补充一些点以达到目标数量
+                if (selectedPoints.length < targetPopupCount && rawPoints.length > selectedPoints.length) {
+                    const remainingCount = targetPopupCount - selectedPoints.length;
+                    for (let i = 0; i < remainingCount; i++) {
+                        const insertIndex = Math.floor((i + 0.5) * rawPoints.length / targetPopupCount);
+                        if (insertIndex < rawPoints.length && selectedPoints.indexOf(rawPoints[insertIndex]) === -1) {
+                            selectedPoints.push(rawPoints[insertIndex]);
+                        }
+                    }
+                    // 按索引排序，确保绘制顺序正确
+                    selectedPoints.sort((a, b) => rawPoints.indexOf(a) - rawPoints.indexOf(b));
+                }
+                
+    
+                
+                // 计算爱心的中心点（页面中心）并应用偏移
+                const centerX = containerRect.left + containerRect.width / 2 + HEART_OFFSET_X;
+                const centerY = containerRect.top + containerRect.height / 2 + HEART_OFFSET_Y;
+    
+                
+                // 计算自适应缩放因子，确保爱心完全铺满显示区域
+                // 考虑弹窗尺寸，确保不会超出边界
+                const maxAllowedSize = Math.min(
+                    containerRect.width - popupWidth,
+                    containerRect.height - popupHeight
+                ) / 2;
+                
+                // 找到最远点，计算缩放比例
+                let maxDistance = 0;
+                for (const point of rawPoints) {
+                    if (point && typeof point.x === 'number' && typeof point.y === 'number') {
+                        const distance = Math.sqrt(point.x * point.x + point.y * point.y);
+                        maxDistance = Math.max(maxDistance, distance);
+                    }
+                }
+                
+                // 根据最远点和最大允许尺寸计算缩放因子，确保完全铺满且不超出边界
+                const adaptiveScale = maxDistance > 0 ? maxAllowedSize / maxDistance : 1;
+                // 应用用户配置的爱心尺寸缩放因子
+                const finalScale = adaptiveScale * HEART_SCALE;
+    
+                
+                // 为每个选中的点创建弹窗
+                selectedPoints.forEach((point, index) => {
+                    // 计算弹窗在页面中的绝对位置 - 基于页面中心的相对定位
+                    const popupX = centerX + (point.x * finalScale);
+                    const popupY = centerY - (point.y * finalScale); // 注意Y轴翻转
+                    
+    
+                    
+                    // 延迟创建弹窗，形成动画效果
+                    setTimeout(() => {
+                        try {
+                            // 创建与原始样式一致的弹窗
+                            const popup = createPopup();
+                            
+                            // 精确定位弹窗，确保在正确位置
+                            popup.style.position = 'fixed';
+                            popup.style.left = popupX - (popupWidth / 2) + 'px';
+                            popup.style.top = popupY - (popupHeight / 2) + 'px';
+                            popup.style.transform = 'scale(0.8)'; // 初始缩放
+                            popup.style.zIndex = '1001'; // 确保弹窗在最上层
+                            
+                            // 添加到当前弹窗列表，用于后续统一管理
+                            currentHeartPopups.push(popup);
+                            
+                            // 显示弹窗动画
+                            showPopupWithAnimation(popup);
+                        } catch (error) {
+                            console.error('创建或定位弹窗失败:', error);
+                        }
+                    }, index * 80); // 优化动画速度，使绘制更流畅
+                });
+                
+        
+                
+                // 返回绘制完成的预计时间
+                return selectedPoints.length * 80;
+            };
+            
+            // 创建弹窗爱心形状 - 自适应版本，确保完全铺满显示区域
+            const drawHeart = (container) => {
+        
+                try {
+                    if (!container) {
+                        console.error('容器为空，无法创建爱心');
+                        return null;
+                    }
+                    
+                    // 创建不可见的SVG元素，仅用于计算位置和尺寸
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svg.style.width = '100%';
+                    svg.style.height = '100%';
+                    svg.setAttribute('viewBox', '0 0 100 100');
+                    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                    svg.style.visibility = 'hidden'; // 隐藏SVG，只用于位置计算
+                    
+                    // 关键修复：先将SVG添加到容器中，确保parentElement不为null
+                    container.appendChild(svg);
+        
+                    
+                    // 获取容器尺寸用于自适应计算
+                    const containerRect = container.getBoundingClientRect();
+        
+                    
+                    // 增加路径分辨率以获得更平滑的爱心形状
+                    const heartPathData = generateHeartPath(300); // 提高分辨率到300
+                    if (!heartPathData.pathString || heartPathData.rawPoints.length === 0) {
+                        console.error('生成的爱心路径数据无效');
+                        return null;
+                    }
+                    
+        
+                    
+                    // 创建弹窗并获取绘制完成的预计时间
+                    const drawingDuration = createPopupsOnPathPoints(heartPathData.rawPoints, svg, 1.2);
+                    
+                    return { container, svg, drawingDuration };
+                } catch (error) {
+                    console.error('创建弹窗爱心形状失败:', error);
+                    return null;
+                }
+            };
+            
+            // 清理所有弹窗并准备下一轮动画 - 无缝循环版本
+            const cleanupHeart = (heartElements, displayTimeMs) => {
+        
+                try {
+                    // 确保有停留时间参数
+                    const actualDisplayTimeMs = displayTimeMs || 3000;
+        
+                    
+                    if (!heartElements || !heartElements.container) {
+                        console.error('要清理的爱心元素不完整');
+                        // 无论如何都尝试开始下一轮动画
+                        setTimeout(drawHeartAnimation, 500);
+                        return;
+                    }
+                    
+                    // 首先同时移除所有弹窗，实现统一淡出效果
+        
+                    currentHeartPopups.forEach((popup, index) => {
+                        // 为每个弹窗添加淡出动画
+                        if (popup && popup.parentNode) {
+                            removePopupWithAnimation(popup);
+                        }
+                    });
+                    
+                    // 清空弹窗列表
+                    setTimeout(() => {
+                        currentHeartPopups = [];
+            
+                        
+                        // 移除容器元素，释放内存
+                        if (heartElements.container && heartElements.container.parentNode) {
+                            heartElements.container.parentNode.removeChild(heartElements.container);
+                
+                        }
+                        
+                        // 垃圾回收提示
+                        heartElements = null;
+                        
+                        // 立即开始下一轮动画，实现无缝循环
+            
+                        setTimeout(drawHeartAnimation, 100); // 最小延迟，确保DOM操作完成
+                    }, FADE_OUT_TIME_MS + 100); // 等待淡出动画完成
+                    
+                } catch (error) {
+                    console.error('清理爱心元素失败:', error);
+                    // 出错时仍然尝试继续动画循环
+                    setTimeout(drawHeartAnimation, 1000);
+                }
+            };
+            
+            // 爱心动画循环 - 自适应无缝循环版本
+            const drawHeartAnimation = () => {
+    
+    
+                try {
+                    // 创建容器
+                    const container = createHeartContainer();
+                    if (!container) {
+                        console.error('容器创建失败，尝试重试...');
+                        setTimeout(drawHeartAnimation, 1000);
+                        return;
+                    }
+                    
+                    document.body.appendChild(container);
+        
+                    
+                    // 创建弹窗爱心 - 现在drawHeart内部会添加SVG到容器
+                    const heartElements = drawHeart(container);
+                    if (!heartElements || !heartElements.svg) {
+                        console.error('爱心创建失败，尝试清理并重试...');
+                        if (container.parentNode) {
+                            container.parentNode.removeChild(container);
+                        }
+                        setTimeout(drawHeartAnimation, 1000);
+                        return;
+                    }
+                    
+                    // 计算总持续时间：绘制时间 + 指定的停留时间
+                    const drawingDuration = heartElements.drawingDuration || 3000; // 绘制爱心的时间
+                    const displayTime = DISPLAY_TIME_MS || 2000; // 爱心停留时间，从配置中获取
+                    const totalDuration = drawingDuration + displayTime;
+                    
+        
+                    
+                    // 设置清理定时器，在指定停留时间后清理并开始下一轮
+                    setTimeout(() => {
+                        cleanupHeart(heartElements, displayTime);
+                    }, totalDuration);
+                } catch (error) {
+                    console.error('爱心动画循环执行失败:', error);
+                    // 出错时仍然尝试继续动画循环
+                    setTimeout(drawHeartAnimation, 2000);
+                }
+            };
+            
+            // 添加全局错误捕获
+            window.addEventListener('error', (event) => {
+                console.error('全局错误捕获:', event.error);
+            });
+            
+            // 启动循环动画
+    
+            drawHeartAnimation();
+    
+        }
+        
         // 显示弹窗
         function showPopups() {
             // 预加载图片
@@ -277,6 +685,8 @@ object HtmlGenerator {
             // 根据配置的模式选择相应的处理函数
             if (POPUP_MODE === "mode2") {
                 handleMode2();
+            } else if (POPUP_MODE === "mode3") {
+                handleMode3();
             } else {
                 // 默认为模式1
                 handleMode1();
