@@ -91,7 +91,77 @@ object HtmlGenerator {
         const INTERVAL_MS = ${AppConfig.getInstance().popupIntervalMs};
         const TEXT_X_OFFSET = ${AppConfig.getInstance().popupTitleXOffset}; // 文本相对于弹窗容器的X轴偏移量
         const TEXT_Y_OFFSET = ${AppConfig.getInstance().popupTitleYOffset}; // 文本相对于弹窗容器的Y轴偏移量
-        const POPUP_MODE = "${AppConfig.getInstance().popupMode}"; // 弹窗模式
+        const CONFIGURED_MODE = "${AppConfig.getInstance().popupMode}"; // 配置文件中指定的弹窗模式
+        const RANDOM_MODE_ENABLED = ${AppConfig.getInstance().randomMode}; // 是否启用随机模式选择
+
+        /**
+         * 伪随机模式选择函数
+         * 使用 localStorage 存储历史记录，确保连续3次刷新不会出现重复模式
+         * @returns {string} 选择的模式 (mode1, mode2, mode3)
+         */
+        function selectPseudoRandomMode() {
+            const STORAGE_KEY = 'popup_mode_history';
+            const AVAILABLE_MODES = ['mode1', 'mode2', 'mode3'];
+            const HISTORY_SIZE = 2; // 记录最近2次的历史，加上本次共3次不重复
+
+            try {
+                // 从 localStorage 读取历史记录
+                let history = [];
+                const storedHistory = localStorage.getItem(STORAGE_KEY);
+                if (storedHistory) {
+                    try {
+                        history = JSON.parse(storedHistory);
+                        // 确保历史记录是数组且不超过指定大小
+                        if (!Array.isArray(history)) {
+                            history = [];
+                        } else {
+                            // 只保留最近的历史记录
+                            history = history.slice(-HISTORY_SIZE);
+                        }
+                    } catch (e) {
+                        console.warn('解析模式历史记录失败，重置历史记录', e);
+                        history = [];
+                    }
+                }
+
+                // 过滤出未使用的模式
+                const availableModes = AVAILABLE_MODES.filter(mode => !history.includes(mode));
+
+                // 如果所有模式都用过了，清空历史重新开始
+                let selectedMode;
+                if (availableModes.length === 0) {
+                    console.log('所有模式已使用，重置历史记录');
+                    history = [];
+                    selectedMode = AVAILABLE_MODES[Math.floor(Math.random() * AVAILABLE_MODES.length)];
+                } else {
+                    // 从可用模式中随机选择一个
+                    selectedMode = availableModes[Math.floor(Math.random() * availableModes.length)];
+                }
+
+                // 更新历史记录
+                history.push(selectedMode);
+                // 只保留最近的 HISTORY_SIZE 条记录
+                if (history.length > HISTORY_SIZE) {
+                    history = history.slice(-HISTORY_SIZE);
+                }
+
+                // 保存到 localStorage
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+
+                console.log('伪随机模式选择 - 历史记录:', history, '选择模式:', selectedMode);
+
+                return selectedMode;
+            } catch (e) {
+                console.error('伪随机模式选择失败，使用默认模式', e);
+                // 如果出错，返回随机模式作为降级方案
+                return AVAILABLE_MODES[Math.floor(Math.random() * AVAILABLE_MODES.length)];
+            }
+        }
+
+        // 决定实际使用的弹窗模式
+        const POPUP_MODE = RANDOM_MODE_ENABLED ? selectPseudoRandomMode() : CONFIGURED_MODE;
+        console.log('当前使用的弹窗模式:', POPUP_MODE, '(随机模式' + (RANDOM_MODE_ENABLED ? '已启用' : '未启用') + ')');
+
         const MAX_POPUPS_COUNT = ${AppConfig.getInstance().maxPopupsCount}; // 模式2下最大弹窗数量
         // mode3相关配置
         const HEART_ANIMATION_DURATION = ${AppConfig.getInstance().heartAnimationDuration}; // 爱心动画持续时间

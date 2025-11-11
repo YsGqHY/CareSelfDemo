@@ -121,6 +121,8 @@ popup:
   popup_text_stroke_color: "rgba(0, 0, 0, 0.9)"
   # 弹窗模式：mode1（默认，定时消失）、mode2（常驻，数量限制）、mode3（中央爱心动画）
   mode: "mode3"
+  # 是否启用随机模式选择，启用后每次刷新页面会随机选择一种显示模式
+  randomMode: false
   # 模式2下最大同时显示的弹窗数量
   maxCount: 100  
   # 模式3下爱心动画持续时间（毫秒）
@@ -239,6 +241,9 @@ app:
                 }
                 if (popupNode.has("mode")) {
                     newConfig.popupMode = popupNode.get("mode").asText()
+                }
+                if (popupNode.has("randomMode")) {
+                    newConfig.randomMode = popupNode.get("randomMode").asBoolean()
                 }
                 if (popupNode.has("maxCount")) {
                     newConfig.maxPopupsCount = popupNode.get("maxCount").asInt()
