@@ -21,6 +21,7 @@ class AppConfig {
     var popupTextColor: String = "white" // 弹窗文本颜色
     var popupTextStrokeColor: String = "rgba(0, 0, 0, 0.9)" // 弹窗文本描边颜色
     var popupMode: String = "mode1" // 弹窗模式，可选值：mode1（默认，定时消失）、mode2（常驻，数量限制）、mode3（中央爱心动画）
+    var randomMode: Boolean = false // 是否启用随机模式选择，启用后每次刷新页面会随机选择一种显示模式
     var heartAnimationDuration: Int = 2000 // 模式3下爱心动画持续时间（毫秒）
     var heartSize: Int = 150 // 模式3下爱心大小（像素）
     var heartColor: String = "#ff3e6c" // 模式3下爱心颜色（默认粉红色）
